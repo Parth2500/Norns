@@ -37,3 +37,6 @@ secrets.json
 node_modules/
 dist/
 .angular/
+
+# Local development files (Heimdall dev certificate)
+.local/

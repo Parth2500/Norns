@@ -46,11 +46,11 @@ Only the first step exists in code today.
 
 | Entity | Meaning |
 |---|---|
-| `User` | A person in a tenant. The id is **passed in, not generated**, so it can be the subject id from an external identity provider. Email is unique within a tenant. |
+| `User` | A person in a tenant. The id is **passed in, not generated**: it is the `sub` of the user's Heimdall access token. Email is unique within a tenant. |
 | `Role` | A named role in a tenant. `Code` is unique within the tenant. |
 | `UserRole` | Joins users to roles. It has no `Id` or `TenantId` of its own. |
 
-Nothing reads users or roles yet. They are meant for "who may make this transition" rules.
+Nothing reads or creates users or roles yet. The signed-in user comes from the token (`ICurrentUser`), not from this table. They are meant for "who may make this transition" rules.
 
 ## Audit
 

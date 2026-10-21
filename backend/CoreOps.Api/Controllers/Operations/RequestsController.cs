@@ -1,23 +1,29 @@
 ﻿using CoreOps.Api.Contracts.Operations.Requests;
+using CoreOps.Application.Common.Security;
 using CoreOps.Application.Operations.CreateRequest;
 using CoreOps.Application.Operations.GetRequest;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CoreOps.Api.Controllers.Operations;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public sealed class RequestsController : ControllerBase
 {
     private readonly CreateRequestHandler _handler;
     private readonly GetRequestByIdQueryHandler _getRequestByIdHandler;
+    private readonly ICurrentUser _currentUser;
 
     public RequestsController(
         CreateRequestHandler handler, 
-        GetRequestByIdQueryHandler getRequestByIdHandler
+        GetRequestByIdQueryHandler getRequestByIdHandler,
+        ICurrentUser currentUser
     ) {
         _handler = handler;
         _getRequestByIdHandler = getRequestByIdHandler;
+        _currentUser = currentUser;
     }
 
     [HttpPost]
@@ -26,12 +32,12 @@ public sealed class RequestsController : ControllerBase
         CancellationToken cancellationToken
     ) {
         var command = new CreateRequestCommand(
-            TenantId: request.TenantId,
+            TenantId: _currentUser.TenantId,
             Title: request.Title,
             Description: request.Description,
             WorkflowDefinitionId: request.WorkflowDefinitionId,
             InitialStateCode: request.InitialStateCode,
-            CreatedBy: request.CreatedBy
+            CreatedBy: _currentUser.UserId
         );
 
         var result = await _handler.Handle(command, cancellationToken);

@@ -1,6 +1,21 @@
 @CoreOps.Api_HostAddress = http://localhost:5201
+# A Heimdall access token for the CoreOps audience. See README, Authentication.
+@token = <paste a Heimdall access token>
 
-GET {{CoreOps.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{CoreOps.Api_HostAddress}}/api/requests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Two days off in March",
+  "description": null,
+  "workflowDefinitionId": "11111111-1111-1111-1111-111111111111",
+  "initialStateCode": "draft"
+}
+
+###
+
+GET {{CoreOps.Api_HostAddress}}/api/requests/<requestId>
+Authorization: Bearer {{token}}
 
 ###
