@@ -4,6 +4,8 @@ CoreOps is a multi-tenant workflow engine for internal requests. A tenant define
 
 **Status:** on hold since January 2026. The domain model, schema and first migration are done. Two endpoints work: create a request and read it by id. Sign-in uses [Heimdall](https://github.com/Parth2500/heimdall-idp): every endpoint needs a Heimdall access token, and the tenant and user come from that token. Moving a request between states, managing workflows, authorization rules and the front end are not built. See [Roadmap](docs/roadmap.md).
 
+**Direction (2026-11-14, not built):** Norns becomes one codebase that can be installed in two places, with no sync between installations. In a home it runs as an extension of Bifröst, the Asgard suite's home service, and holds that home's requests. Online it stays a service that signs in with Heimdall, as described below. This needs storage that is not tied to SQL Server and a second sign-in path. See [Roadmap](docs/roadmap.md#direction-2026-11-14) and the suite decision S10 in `Asgard/docs/decisions.md`.
+
 ## Stack
 
 - .NET 9, ASP.NET Core controllers, Swagger in Development

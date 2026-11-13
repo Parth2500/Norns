@@ -14,6 +14,32 @@ Written in October 2026, while the project has been on hold since January 2026. 
 - Serilog request logging, Swagger in Development, Dockerfile for the API.
 - **Auth with Heimdall** (October 2026). JWT bearer validation of Heimdall access tokens (RS256, `typ` = `at+jwt`, issuer, audience, user tokens only). Each Heimdall issuer maps to a CoreOps tenant in `Heimdall:Tenants`. `TenantId` and the user id come from the token and are no longer in request bodies. An EF Core global query filter limits every query to the token's tenant. Every endpoint requires a signed-in user.
 
+## Direction (2026-11-14)
+
+The owner decided how Norns fits the Asgard suite (decisions S10 and S12 in `Asgard/docs/decisions.md`). Nothing here is built. It changes what the steps under "Next" must allow for.
+
+**One codebase, two places to install. Installations never sync.**
+
+| | In a home | Online |
+|---|---|---|
+| Runs as | An extension of Bifröst: started by Bifröst, on a private socket, no network port | A hosted service, as today |
+| Who is calling | Bifröst's headers: person, role, device | A Heimdall access token, as built in October 2026 |
+| Tenant | One: the home | From the token's issuer, as today |
+| Storage | SQLite | SQL Server or PostgreSQL |
+| Reaches the admin | Through Bifröst's "ask the admin": the host screen, the admin's phone and a Huginn notice, at once | Its own front end |
+
+**What that asks of the code**
+
+1. **Storage that is not tied to SQL Server.** Keep EF Core provider-neutral, with SQLite as the home provider. SQL Server cannot be shipped to a home machine. Do this before the schema grows: `rowversion` (step 3 below) is SQL Server only, so use a concurrency token that every provider has.
+2. **.NET 10,** to match Bifröst, Sleipnir and Saga.
+3. **Sign-in behind one seam.** Today the tenant and user come from a Heimdall token. Put that behind an interface with two implementations: Heimdall tokens, and Bifröst's identity headers. The Application layer already takes the tenant and user as inputs, so the seam belongs in the Api project.
+4. **A Bifröst extension manifest** and a start-up mode, as Sleipnir has (Bifröst design §8).
+5. **No notifications of its own.** A transition that needs a person's answer goes through Bifröst's "ask the admin". Norns does not call Huginn.
+
+**First home workflow:** "may this download start?" Sleipnir holds a download as pending and hands the request to Norns. Norns applies its rules (for example, approve automatically under a size) and its history, asks the admin when needed, and tells Sleipnir the result. Without Norns installed, Sleipnir asks Bifröst for a plain approve or reject, so Norns stays optional.
+
+**Order.** Steps 1 to 4 under "Next" are still the core and come first. Items 1 and 3 above fit inside them. Items 2, 4 and 5 wait until Bifröst can host an extension.
+
 ## Next
 
 1. **Workflow management.** Add methods to `WorkflowDefinition` for adding states and transitions, and set `TenantId` on each state and transition (the tenant query filter hides rows with `Guid.Empty`). Enforce the rules there: exactly one initial state, at least one terminal state, transitions only between states of the same workflow. Add `POST /api/workflows` (states and transitions in one body), `GET /api/workflows/{id}`, and activate/deactivate.
